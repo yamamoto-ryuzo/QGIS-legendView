@@ -5,12 +5,12 @@
 [general]
 name=QGIS-legendView
 qgisMinimumVersion=3.0
-description=凡例を表示する
+description=Display only the necessary legends in a clear, easy-to-understand manner
 version=1.0
 author=soja city & yamamoto ryuzo
 email=ryu@yamakun.net
 
-about=選択したレイヤの凡例を表示する
+about=The legend you want to display is set in the project variable lagend_group_layer_name.
 
 tracker=https://github.com/yamamoto-ryuzo/QGIS-legendView/
 repository=https://github.com/yamamoto-ryuzo/QGIS-legendView/
