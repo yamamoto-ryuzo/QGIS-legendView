@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/legend_view" >
+        <file>icon.png</file>
+    </qresource>
+</RCC>
