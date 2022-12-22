@@ -6,14 +6,14 @@
 name=凡例表示
 qgisMinimumVersion=3.0
 description=凡例を表示する
-version=0.1
-author=soja city.
-email=none
+version=1.0
+author=soja city & yamamoto ryuzo
+email=ryu@yamakun.net
 
 about=選択したレイヤの凡例を表示する
 
-tracker=http://bugs
-repository=http://repo
+tracker=https://github.com/yamamoto-ryuzo/QGIS-legendView/
+repository=https://github.com/yamamoto-ryuzo/QGIS-legendView/
 # End of mandatory metadata
 
 # Recommended items:
@@ -25,7 +25,7 @@ hasProcessingProvider=no
 # Tags are comma separated with spaces allowed
 tags=python
 
-homepage=http://homepage
+homepage=https://github.com/yamamoto-ryuzo/QGIS-legendView/
 category=Plugins
 icon=icon.png
 # experimental flag
