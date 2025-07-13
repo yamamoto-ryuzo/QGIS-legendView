@@ -47,9 +47,6 @@ if QT_VERSION == 6:
         AlignTop = Qt.AlignmentFlag.AlignTop
         AlignBottom = Qt.AlignmentFlag.AlignBottom
         
-        # Orientation constants for Qt6
-        QtOrientation = Qt.Orientation
-        
         # Widget attributes for Qt6
         WA_DeleteOnClose = Qt.WidgetAttribute.WA_DeleteOnClose
         RightDockWidgetArea = Qt.DockWidgetArea.RightDockWidgetArea
@@ -65,17 +62,6 @@ if QT_VERSION == 6:
         def setLabelAlignment(label):
             """Qt6 specific alignment setting"""
             label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
-        
-        def createSymbolPreview(symbol, size):
-            """Qt6 specific symbol preview creation - 3x larger symbol"""
-            try:
-                from qgis.core import QgsSymbolLayerUtils
-                # Make symbol 3x larger for better visibility
-                enhanced_size = QSize(int(size.width() * 3.0), int(size.height() * 3.0))
-                return QgsSymbolLayerUtils.symbolPreviewPixmap(symbol, enhanced_size)
-            except:
-                from PyQt6.QtGui import QPixmap
-                return QPixmap(size)
             
     except Exception as e:
         # Fallback for Qt6
@@ -86,7 +72,6 @@ if QT_VERSION == 6:
         AlignRight = getattr(Qt, 'AlignRight', 0x0002)
         AlignTop = getattr(Qt, 'AlignTop', 0x0020)
         AlignBottom = getattr(Qt, 'AlignBottom', 0x0040)
-        QtOrientation = getattr(Qt, 'Orientation', Qt)
         WA_DeleteOnClose = getattr(Qt, 'WA_DeleteOnClose', 0x0037)
         RightDockWidgetArea = getattr(Qt, 'RightDockWidgetArea', 0x2)
         PM_ListViewIconSize = getattr(QStyle, 'PM_ListViewIconSize', 1)
@@ -102,17 +87,6 @@ if QT_VERSION == 6:
                 label.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
             except:
                 label.setAlignment(0x0004 | 0x0080)
-        
-        def createSymbolPreview(symbol, size):
-            """Qt6 fallback symbol preview creation - 3x larger symbol to match main function"""
-            try:
-                from qgis.core import QgsSymbolLayerUtils
-                # Qt6 fallback also gets 3x size enhancement to match main Qt6 function
-                enhanced_size = QSize(int(size.width() * 3.0), int(size.height() * 3.0))
-                return QgsSymbolLayerUtils.symbolPreviewPixmap(symbol, enhanced_size)
-            except:
-                from PyQt6.QtGui import QPixmap
-                return QPixmap(size)
 
 else:
     # Qt5 specific implementations
@@ -128,9 +102,6 @@ else:
         AlignRight = Qt.AlignRight
         AlignTop = Qt.AlignTop
         AlignBottom = Qt.AlignBottom
-        
-        # Orientation constants for Qt5
-        QtOrientation = Qt
         
         # Widget attributes for Qt5
         WA_DeleteOnClose = Qt.WA_DeleteOnClose
@@ -152,25 +123,6 @@ else:
             except Exception as e:
                 # Ultimate fallback
                 pass
-        
-        def createSymbolPreview(symbol, size):
-            """Qt5 specific symbol preview creation - 3x larger symbol"""
-            try:
-                from qgis.core import QgsSymbolLayerUtils
-                # Make symbol 3x larger for better visibility
-                enhanced_size = QSize(int(size.width() * 3.0), int(size.height() * 3.0))
-                return QgsSymbolLayerUtils.symbolPreviewPixmap(symbol, enhanced_size)
-            except:
-                # Create empty pixmap if all fails
-                from PyQt5.QtGui import QPixmap, QPainter, QBrush
-                from PyQt5.QtCore import Qt
-                pixmap = QPixmap(size)
-                pixmap.fill(Qt.transparent)
-                painter = QPainter(pixmap)
-                painter.setBrush(QBrush(Qt.lightGray))
-                painter.drawRect(0, 0, size.width(), size.height())
-                painter.end()
-                return pixmap
                 
     except Exception as e:
         # Ultimate fallback for Qt5
@@ -181,7 +133,6 @@ else:
         AlignRight = 0x0002
         AlignTop = 0x0020
         AlignBottom = 0x0040
-        QtOrientation = None
         WA_DeleteOnClose = 0x0037
         RightDockWidgetArea = 0x2
         PM_ListViewIconSize = 1
@@ -197,21 +148,6 @@ else:
                 label.setAlignment(0x0004 | 0x0080)
             except:
                 pass
-        
-        def createSymbolPreview(symbol, size):
-            """Fallback symbol preview creation - 3x larger symbol"""
-            try:
-                from qgis.core import QgsSymbolLayerUtils
-                # Make fallback symbol 3x larger too
-                enhanced_size = QSize(int(size.width() * 3.0), int(size.height() * 3.0))
-                return QgsSymbolLayerUtils.symbolPreviewPixmap(symbol, enhanced_size)
-            except:
-                try:
-                    from PyQt5.QtGui import QPixmap
-                    return QPixmap(size)
-                except:
-                    from PyQt6.QtGui import QPixmap
-                    return QPixmap(size)
 
 def get_qt_version():
     """Return Qt version as integer (5 or 6)"""

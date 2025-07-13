@@ -57,9 +57,15 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.currentLayer = None
         self.root = QgsProject.instance().layerTreeRoot()
 
-        vheader = QHeaderView(QtOrientation.Vertical)
+        # Qt5/Qt6 compatible orientation usage
+        if is_qt5():
+            vheader = QHeaderView(Qt.Vertical)
+            hheader = QHeaderView(Qt.Horizontal)
+        else:
+            vheader = QHeaderView(QtOrientation.Vertical)
+            hheader = QHeaderView(QtOrientation.Horizontal)
+            
         self.tableWidget.setVerticalHeader(vheader)
-        hheader = QHeaderView(QtOrientation.Horizontal)
         self.tableWidget.setHorizontalHeader(hheader)
         self.tableWidget.setHorizontalHeaderLabels([self.tr("シンボル"), self.tr("凡例")])
         self.tableWidget.setSelectionMode(NoSelection)
@@ -138,30 +144,30 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.mOpacityWidget.setOpacity( layer.opacity())
             self.tableWidget.setVisible(True)
             self.tableWidget.horizontalHeader().setDefaultSectionSize(65)
-            self.tableWidget.verticalHeader().setDefaultSectionSize(30)
+            
+            # Qt6 requires larger row height for better symbol display
+            if is_qt6():
+                self.tableWidget.verticalHeader().setDefaultSectionSize(30)  # Same as Qt5
+            else:
+                self.tableWidget.verticalHeader().setDefaultSectionSize(30)  # Standard for Qt5
+                
             self.tableWidget.setRowCount(len(symbols))
             self.tableWidget.setColumnCount(2)
             self.tableWidget.horizontalHeader().setStretchLastSection(True)
 
             pm_icon_size = self.tableWidget.style().pixelMetric(PM_ListViewIconSize)
+            
+            # Use same size for both Qt5 and Qt6
             icon_size = QSize(self.tableWidget.columnWidth(0) - 10, pm_icon_size)
 
             i = 0
             for symbol in symbols:
                 item1 = QTableWidgetItem()
                 label = QLabel()
-                # Use Qt compatibility for alignment - handle both Qt5 and Qt6
-                try:
-                    # Try Qt6 style first
-                    label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
-                except (AttributeError, TypeError):
-                    # Fallback to Qt5 style or integer values
-                    try:
-                        label.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-                    except (AttributeError, TypeError):
-                        # Ultimate fallback with integer values
-                        label.setAlignment(0x0004 | 0x0080)  # AlignHCenter | AlignVCenter
-                pixmap = QgsSymbolLayerUtils.symbolPreviewPixmap(symbol, icon_size)
+                # Use Qt version-specific alignment function
+                setLabelAlignment(label)
+                # Use Qt version-specific symbol preview function for better SVG support
+                pixmap = createSymbolPreview(symbol, icon_size)
                 label.setPixmap(pixmap)
                 self.tableWidget.setCellWidget(i,0,label)
                 i+=1
@@ -228,7 +234,9 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             layer_name = sstr.replace("legend_","")
             layer = self.getLayer(layer_name.split("_"))
             if isinstance(layer, QgsMapLayer) :
-                self.distributeOrderList(layer.id(), layer_name, ecs.variable(sstr), layerIdList, layerIdList2)
+                # Get variable value and handle None safely
+                variable_value = ecs.variable(sstr)
+                self.distributeOrderList(layer.id(), layer_name, variable_value, layerIdList, layerIdList2)
 
         if len(layerIdList) > 0:
             layerIdList.sort(key=itemgetter(1))
@@ -291,8 +299,16 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def distributeOrderList(self, layer_id, layer_name, orderValue, numericList: list, nonNumericList: list):
 
         while True:
-            if isinstance(orderValue, QVariant):
+            # Check for None or QVariant null values first
+            if orderValue is None or isinstance(orderValue, QVariant):
                 break
+            
+            # Convert to string if not already
+            if not isinstance(orderValue, str):
+                try:
+                    orderValue = str(orderValue)
+                except:
+                    break
 
             m = re.fullmatch(r"\d+", orderValue)
             if not m is None:

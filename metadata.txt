@@ -24,9 +24,11 @@ hasProcessingProvider=no
 # Changelog for version 2.0.1
 changelog=
     Version 2.0.1:
-    - Fixed Qt5/Qt6 compatibility issues
-    - Added support for QGIS 3.44+ (Qt6)
-    - Enhanced alignment handling for different Qt versions
+    - Fixed Qt5/Qt6 compatibility issues with dedicated logic per version
+    - Added Qt5-specific safe alignment handling to prevent freezing
+    - Added Qt6-specific proper enum handling for modern QGIS
+    - Created version-specific setLabelAlignment function
+    - Enhanced error handling and version detection
     - Improved toolbar creation and error handling
     - Fixed setAlignment TypeError in Qt6 environments
     Version 2.0.0:
