@@ -77,10 +77,8 @@ class LegendView:
         # Declare instance attributes
         self.actions = []
         self.menu = self.tr(u'&凡例表示')  # Default to Japanese, will be translated
-        # TODO: We are going to let the user set this up in a future iteration
-        self.toolbar = self.iface.addToolBar(u'LegendView')
-        self.toolbar.setObjectName(u'LegendView')
-
+        self.toolbar = None  # Initialize as None, will be created in initGui()
+        
         #print "** INITIALIZING LegendView"
 
         self.pluginIsActive = False
@@ -180,7 +178,7 @@ class LegendView:
         if whats_this is not None:
             action.setWhatsThis(whats_this)
 
-        if add_to_toolbar:
+        if add_to_toolbar and self.toolbar is not None:
             self.toolbar.addAction(action)
 
         if add_to_menu:
@@ -195,6 +193,16 @@ class LegendView:
 
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
+        
+        # Create toolbar safely during GUI initialization
+        try:
+            if self.toolbar is None:
+                self.toolbar = self.iface.addToolBar(u'LegendView')
+                self.toolbar.setObjectName(u'LegendView')
+        except Exception as e:
+            QgsMessageLog.logMessage(f"Error creating toolbar: {str(e)}", "LegendView", level=1)
+            # Fallback: don't use toolbar if creation fails
+            self.toolbar = None
 
         icon_path = ':/plugins/legend_view/icon.png'
         self.add_action(
@@ -234,8 +242,13 @@ class LegendView:
                 self.tr(u'&凡例表示'),  # Default to Japanese, will be translated
                 action)
             self.iface.removeToolBarIcon(action)
-        # remove the toolbar
-        del self.toolbar
+        # remove the toolbar safely
+        if self.toolbar is not None:
+            try:
+                del self.toolbar
+            except:
+                pass
+            self.toolbar = None
 
     #--------------------------------------------------------------------------
 

@@ -4,15 +4,15 @@
 
 [general]
 name=QGIS-legendView-main
-qgisMinimumVersion=3.0
+qgisMinimumVersion=3.22
 qgisMaximumVersion=3.99
-description=Display only the necessary legends in a clear, easy-to-understand manner with Qt5/Qt6 compatibility
+description=Display only the necessary legends in a clear, easy-to-understand manner with Qt6 compatibility
 version=2.0.1
 author=yamamoto ryuzo
 email=ryu@yamakun.net
 supportsQt6=True
 
-about=The legend you want to display is set in the project variable legend_group_layer_name. This plugin provides a dockable widget that displays legends for selected layers in a compact and organized way. Features include multi-language support (Japanese/English), Qt5/Qt6 compatibility, and enhanced user interface. Supports QGIS 3.0 to 3.99 with both Qt5 and Qt6 frameworks.
+about=The legend you want to display is set in the project variable legend_group_layer_name. This plugin provides a dockable widget that displays legends for selected layers in a compact and organized way. Features include multi-language support (Japanese/English), Qt6 compatibility, and enhanced user interface. Supports QGIS 3.22+ with Qt6 framework.
 
 tracker=https://github.com/yamamoto-ryuzo/QGIS-legendView/
 repository=https://github.com/yamamoto-ryuzo/QGIS-legendView/
@@ -24,21 +24,21 @@ hasProcessingProvider=no
 # Changelog for version 2.0.1
 changelog=
     Version 2.0.1:
-    - Fixed Qt5/Qt6 compatibility issues
-    - Added support for QGIS 3.44+ (Qt6)
-    - Enhanced alignment handling for different Qt versions
+    - Fixed Qt6 compatibility issues
+    - Added explicit Qt6 support for QGIS 3.22+
+    - Enhanced alignment handling for Qt6
     - Improved toolbar creation and error handling
     - Fixed setAlignment TypeError in Qt6 environments
     Version 2.0.0:
-    - Added Qt5/Qt6 compatibility support
+    - Added Qt6 compatibility support
     - Implemented multi-language support (Japanese and English)
     - Enhanced translation system with fallback mechanisms
-    - Improved compatibility across QGIS versions (3.0 to 3.30+)
+    - Improved compatibility across QGIS versions
     - Added comprehensive version management
     - Fixed translation issues and Qt compatibility problems
 
 # Tags are comma separated with spaces allowed
-tags=python,legend,dock,widget,qt5,qt6,qt6-compatible,visualization,cartography,compatibility
+tags=python,legend,dock,widget,qt6,qt6-compatible,visualization,cartography,compatibility
 
 homepage=https://github.com/yamamoto-ryuzo/QGIS-legendView/
 category=Plugins
@@ -56,4 +56,3 @@ deprecated=False
 
 # If the plugin can run on QGIS Server.
 server=False
-

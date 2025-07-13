@@ -58,8 +58,7 @@ def create_plugin_zip():
     
     # Directories to include
     DIRS_TO_INCLUDE = [
-        "i18n",
-        "legend"
+        "i18n"
     ]
     
     print(f"Creating plugin ZIP package: {ZIP_NAME}")

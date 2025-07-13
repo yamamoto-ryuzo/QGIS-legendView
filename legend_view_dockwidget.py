@@ -150,7 +150,17 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             for symbol in symbols:
                 item1 = QTableWidgetItem()
                 label = QLabel()
-                label.setAlignment(AlignHCenter | AlignVCenter)
+                # Use Qt compatibility for alignment - handle both Qt5 and Qt6
+                try:
+                    # Try Qt6 style first
+                    label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
+                except (AttributeError, TypeError):
+                    # Fallback to Qt5 style or integer values
+                    try:
+                        label.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+                    except (AttributeError, TypeError):
+                        # Ultimate fallback with integer values
+                        label.setAlignment(0x0004 | 0x0080)  # AlignHCenter | AlignVCenter
                 pixmap = QgsSymbolLayerUtils.symbolPreviewPixmap(symbol, icon_size)
                 label.setPixmap(pixmap)
                 self.tableWidget.setCellWidget(i,0,label)
