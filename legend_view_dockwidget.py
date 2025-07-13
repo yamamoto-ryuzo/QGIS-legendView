@@ -28,10 +28,32 @@ import os
 import re
 from io import BytesIO
 
-from qgis.PyQt import QtGui, QtWidgets, uic
-from qgis.PyQt.QtCore import pyqtSignal, QSize,QVariant, Qt
-from qgis.PyQt.QtGui import QBrush, QPixmap, QImage, QIcon, QFont
-from qgis.PyQt.QtWidgets import  QTableWidget, QTableWidgetItem, QApplication, QWidget,QHeaderView, QMessageBox, QLabel, QStyle
+try:
+    # Use qt_compat module for Qt5/Qt6 compatibility
+    from .qt_compat import (QtGui, QtWidgets, uic, pyqtSignal, QSize, QVariant, Qt,
+                           QBrush, QPixmap, QImage, QIcon, QFont, QTableWidget, 
+                           QTableWidgetItem, QApplication, QWidget, QHeaderView, 
+                           QMessageBox, QLabel, QStyle, QtOrientation, translate)
+except ImportError:
+    # Fallback to direct imports
+    try:
+        from qgis.PyQt import QtGui, QtWidgets, uic
+        from qgis.PyQt.QtCore import pyqtSignal, QSize, QVariant, Qt
+        from qgis.PyQt.QtGui import QBrush, QPixmap, QImage, QIcon, QFont
+        from qgis.PyQt.QtWidgets import QTableWidget, QTableWidgetItem, QApplication, QWidget, QHeaderView, QMessageBox, QLabel, QStyle
+        QtOrientation = Qt
+        def translate(context, message):
+            from qgis.PyQt.QtCore import QCoreApplication
+            return QCoreApplication.translate(context, message)
+    except ImportError:
+        from PyQt5 import QtGui, QtWidgets, uic
+        from PyQt5.QtCore import pyqtSignal, QSize, QVariant, Qt
+        from PyQt5.QtGui import QBrush, QPixmap, QImage, QIcon, QFont
+        from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QApplication, QWidget, QHeaderView, QMessageBox, QLabel, QStyle
+        QtOrientation = Qt
+        def translate(context, message):
+            from PyQt5.QtCore import QCoreApplication
+            return QCoreApplication.translate(context, message)
 
 #from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QApplication, QWidget
 
@@ -61,11 +83,11 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.currentLayer = None
         self.root = QgsProject.instance().layerTreeRoot()
 
-        vheader = QHeaderView(Qt.Orientation.Vertical)
+        vheader = QHeaderView(QtOrientation.Vertical)
         self.tableWidget.setVerticalHeader(vheader)
-        hheader = QHeaderView(Qt.Orientation.Horizontal)
+        hheader = QHeaderView(QtOrientation.Horizontal)
         self.tableWidget.setHorizontalHeader(hheader)
-        self.tableWidget.setHorizontalHeaderLabels(["シンボル","凡例"])
+        self.tableWidget.setHorizontalHeaderLabels([self.tr("シンボル"), self.tr("凡例")])
         self.tableWidget.setSelectionMode(QTableWidget.NoSelection)
         self.styleComboBox.setVisible(False)
         self.styleLabel.setVisible(False)
@@ -77,6 +99,40 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.comboBox.setCurrentIndex(-1)
         self.comboBox.setCurrentIndex(0)
         self.showLegend()
+
+    def tr(self, message):
+        """Get the translation for a string using Qt translation API.
+
+        We implement this ourselves since we do not inherit QObject.
+
+        :param message: String for translation.
+        :type message: str, QString
+
+        :returns: Translated version of message.
+        :rtype: QString
+        """
+        # Try Qt translation first
+        translated = translate('LegendView', message)
+        
+        # If no translation found or same as original, try Python fallback
+        if translated == message:
+            try:
+                from .i18n.translations import translate as py_translate
+                # Get locale from QSettings
+                try:
+                    from qgis.PyQt.QtCore import QSettings
+                    locale = QSettings().value('locale/userLocale', 'en')[0:2]
+                except:
+                    locale = 'ja'  # Default to Japanese
+                    
+                if locale not in ['ja', 'en']:
+                    locale = 'en'
+                    
+                translated = py_translate('LegendView', message, locale)
+            except ImportError:
+                pass
+        
+        return translated
 
     def closeEvent(self, event):        
         self.closingPlugin.emit()
@@ -118,7 +174,7 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             for legendItem in legendItems :
                 label = legendItem.label()
                 other_item = not bool(label)
-                item2 = QTableWidgetItem("その他の値" if other_item else legendItem.label())                
+                item2 = QTableWidgetItem(self.tr("その他の値") if other_item else legendItem.label())                
                 if other_item:
                     font = QFont()
                     font.setItalic(True)

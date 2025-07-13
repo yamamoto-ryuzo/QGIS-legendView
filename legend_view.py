@@ -23,14 +23,32 @@
 """
 import re
 
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QDockWidget
+try:
+    # Use qt_compat module for Qt5/Qt6 compatibility
+    from .qt_compat import (QSettings, QTranslator, QCoreApplication, Qt, 
+                           QIcon, QAction, QDockWidget, translate)
+except ImportError:
+    # Fallback to direct imports
+    try:
+        from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
+        from qgis.PyQt.QtGui import QIcon
+        from qgis.PyQt.QtWidgets import QAction, QDockWidget
+        def translate(context, message):
+            return QCoreApplication.translate(context, message)
+    except ImportError:
+        from PyQt5.QtCore import QSettings, QTranslator, QCoreApplication, Qt
+        from PyQt5.QtGui import QIcon
+        from PyQt5.QtWidgets import QAction, QDockWidget
+        def translate(context, message):
+            return QCoreApplication.translate(context, message)
 
 from qgis.core import QgsSettings, QgsMessageLog, QgsProject, QgsExpressionContextUtils
 
 # Initialize Qt resources from file resources.py
 from .resources_rc import *
+
+# Import version information
+from .version import __version__, get_version_info, get_compatibility_info
 
 # Import the code for the DockWidget
 from .legend_view_dockwidget import LegendViewDockWidget
@@ -60,14 +78,21 @@ class LegendView:
             'i18n',
             'LegendView_{}.qm'.format(locale))
 
+        # Try to load Qt translator
+        self.translator = None
         if os.path.exists(locale_path):
             self.translator = QTranslator()
-            self.translator.load(locale_path)
-            QCoreApplication.installTranslator(self.translator)
+            if self.translator.load(locale_path):
+                QCoreApplication.installTranslator(self.translator)
+            else:
+                self.translator = None
+        
+        # Store current locale for Python fallback translations
+        self.current_locale = locale if locale in ['ja', 'en'] else 'en'
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&凡例表示')
+        self.menu = self.tr(u'&凡例表示')  # Default to Japanese, will be translated
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'LegendView')
         self.toolbar.setObjectName(u'LegendView')
@@ -96,8 +121,18 @@ class LegendView:
         :returns: Translated version of message.
         :rtype: QString
         """
-        # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('LegendView', message)
+        # Try Qt translation first
+        translated = translate('LegendView', message)
+        
+        # If no translation found or same as original, try Python fallback
+        if translated == message and hasattr(self, 'current_locale'):
+            try:
+                from .i18n.translations import translate as py_translate
+                translated = py_translate('LegendView', message, self.current_locale)
+            except ImportError:
+                pass
+        
+        return translated
 
 
     def add_action(
@@ -180,7 +215,7 @@ class LegendView:
         icon_path = ':/plugins/legend_view/icon.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'凡例'),
+            text=self.tr(u'凡例'),  # Default to Japanese, will be translated
             callback=self.run,
             parent=self.iface.mainWindow())
 
@@ -212,7 +247,7 @@ class LegendView:
 
         for action in self.actions:
             self.iface.removePluginMenu(
-                self.tr(u'&凡例表示'),
+                self.tr(u'&凡例表示'),  # Default to Japanese, will be translated
                 action)
             self.iface.removeToolBarIcon(action)
         # remove the toolbar
@@ -291,4 +326,4 @@ class LegendView:
             value = ecs.variable(name)
             if value == "1":
                 self.run()
-            
+

@@ -3,14 +3,14 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=QGIS-legendView
+name=QGIS-legendView-main
 qgisMinimumVersion=3.0
-description=Display only the necessary legends in a clear, easy-to-understand manner
-version=1.0
-author=soja city & yamamoto ryuzo
+description=Display only the necessary legends in a clear, easy-to-understand manner with Qt5/Qt6 compatibility
+version=2.0.1
+author=yamamoto ryuzo
 email=ryu@yamakun.net
 
-about=The legend you want to display is set in the project variable lagend_group_layer_name.
+about=The legend you want to display is set in the project variable legend_group_layer_name. This plugin provides a dockable widget that displays legends for selected layers in a compact and organized way. Features include multi-language support (Japanese/English), Qt5/Qt6 compatibility, and enhanced user interface.
 
 tracker=https://github.com/yamamoto-ryuzo/QGIS-legendView/
 repository=https://github.com/yamamoto-ryuzo/QGIS-legendView/
@@ -19,8 +19,15 @@ repository=https://github.com/yamamoto-ryuzo/QGIS-legendView/
 # Recommended items:
 
 hasProcessingProvider=no
-# Uncomment the following line and add your changelog:
-# changelog=
+# Changelog for version 2.0.0
+changelog=
+    Version 2.0.0:
+    - Added Qt5/Qt6 compatibility support
+    - Implemented multi-language support (Japanese and English)
+    - Enhanced translation system with fallback mechanisms
+    - Improved compatibility across QGIS versions (3.0 to 3.30+)
+    - Added comprehensive version management
+    - Fixed translation issues and Qt compatibility problems
 
 # Tags are comma separated with spaces allowed
 tags=python
