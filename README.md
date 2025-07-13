@@ -76,4 +76,5 @@ python version_manager.py stable   # 2.0.0 (remove pre-release)
 
 #### Display example/表示例
 ![image](https://user-images.githubusercontent.com/86514652/209077323-d3b375f9-b713-4ca6-8388-1b82c24b6d50.png)
-![image](https://user-images.githubusercontent.com/86514652/209087101-46da9c8c-bf31-4c60-8704-b0d97da9518a.png)
+<img width="363" height="378" alt="image" src="https://github.com/user-attachments/assets/b3635409-68ef-496b-967e-28f6987e556c" />
+
