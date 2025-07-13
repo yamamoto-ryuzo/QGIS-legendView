@@ -23,24 +23,8 @@
 """
 import re
 
-try:
-    # Use qt_compat module for Qt5/Qt6 compatibility
-    from .qt_compat import (QSettings, QTranslator, QCoreApplication, Qt, 
-                           QIcon, QAction, QDockWidget, translate)
-except ImportError:
-    # Fallback to direct imports
-    try:
-        from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
-        from qgis.PyQt.QtGui import QIcon
-        from qgis.PyQt.QtWidgets import QAction, QDockWidget
-        def translate(context, message):
-            return QCoreApplication.translate(context, message)
-    except ImportError:
-        from PyQt5.QtCore import QSettings, QTranslator, QCoreApplication, Qt
-        from PyQt5.QtGui import QIcon
-        from PyQt5.QtWidgets import QAction, QDockWidget
-        def translate(context, message):
-            return QCoreApplication.translate(context, message)
+# Import Qt compatibility module
+from .qt_compat import QSettings, QTranslator, QCoreApplication, Qt, QIcon, QAction, QDockWidget, WA_DeleteOnClose, RightDockWidgetArea, translate
 
 from qgis.core import QgsSettings, QgsMessageLog, QgsProject, QgsExpressionContextUtils
 
@@ -269,7 +253,7 @@ class LegendView:
             if self.dockwidget == None:
                 # Create the dockwidget (after translation) and keep reference
                 self.dockwidget = LegendViewDockWidget(self.iface)
-                self.dockwidget.setAttribute(Qt.WA_DeleteOnClose)
+                self.dockwidget.setAttribute(WA_DeleteOnClose)
 
             # connect to provide cleanup on closing of dockwidget
             self.dockwidget.closingPlugin.connect(self.onClosePlugin)
@@ -300,7 +284,7 @@ class LegendView:
         is_floating = s.value("LegendView/isfloating", "0") == "1"
 
         if is_floating:
-            self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+            self.iface.addDockWidget(RightDockWidgetArea, self.dockwidget)
             geometry = s.value("LegendView/geometry", "")
             if not geometry.isEmpty():
                 self.dockwidget.restoreGeometry(bytearray(geometry))
@@ -309,7 +293,7 @@ class LegendView:
         else:
             self.dockwidget.setFloating(False)
             if not self.iface.mainWindow().restoreDockWidget(self.dockwidget):
-                self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+                self.iface.addDockWidget(RightDockWidgetArea, self.dockwidget)
 
         self.dockwidget.show()
 

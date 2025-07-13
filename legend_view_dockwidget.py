@@ -28,34 +28,8 @@ import os
 import re
 from io import BytesIO
 
-try:
-    # Use qt_compat module for Qt5/Qt6 compatibility
-    from .qt_compat import (QtGui, QtWidgets, uic, pyqtSignal, QSize, QVariant, Qt,
-                           QBrush, QPixmap, QImage, QIcon, QFont, QTableWidget, 
-                           QTableWidgetItem, QApplication, QWidget, QHeaderView, 
-                           QMessageBox, QLabel, QStyle, QtOrientation, translate)
-except ImportError:
-    # Fallback to direct imports
-    try:
-        from qgis.PyQt import QtGui, QtWidgets, uic
-        from qgis.PyQt.QtCore import pyqtSignal, QSize, QVariant, Qt
-        from qgis.PyQt.QtGui import QBrush, QPixmap, QImage, QIcon, QFont
-        from qgis.PyQt.QtWidgets import QTableWidget, QTableWidgetItem, QApplication, QWidget, QHeaderView, QMessageBox, QLabel, QStyle
-        QtOrientation = Qt
-        def translate(context, message):
-            from qgis.PyQt.QtCore import QCoreApplication
-            return QCoreApplication.translate(context, message)
-    except ImportError:
-        from PyQt5 import QtGui, QtWidgets, uic
-        from PyQt5.QtCore import pyqtSignal, QSize, QVariant, Qt
-        from PyQt5.QtGui import QBrush, QPixmap, QImage, QIcon, QFont
-        from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QApplication, QWidget, QHeaderView, QMessageBox, QLabel, QStyle
-        QtOrientation = Qt
-        def translate(context, message):
-            from PyQt5.QtCore import QCoreApplication
-            return QCoreApplication.translate(context, message)
-
-#from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QApplication, QWidget
+# Import Qt compatibility module
+from .qt_compat import *
 
 from qgis.core import *
 from qgis.gui import *
@@ -88,14 +62,26 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         hheader = QHeaderView(QtOrientation.Horizontal)
         self.tableWidget.setHorizontalHeader(hheader)
         self.tableWidget.setHorizontalHeaderLabels([self.tr("シンボル"), self.tr("凡例")])
-        self.tableWidget.setSelectionMode(QTableWidget.NoSelection)
+        self.tableWidget.setSelectionMode(NoSelection)
         self.styleComboBox.setVisible(False)
         self.styleLabel.setVisible(False)
 
         self.comboDataSet()
         self.comboBox.currentIndexChanged.connect(self.currentIndexChanged)
         self.mOpacityWidget.opacityChanged.connect(self.opacityChanged)
-        self.styleComboBox.currentIndexChanged['QString'].connect(self.changeNamedStyle)
+        
+        # Qt5/Qt6 compatible signal connection
+        try:
+            # Try Qt6 approach first
+            self.styleComboBox.currentTextChanged.connect(self.changeNamedStyle)
+        except AttributeError:
+            try:
+                # Qt5 approach with QString
+                self.styleComboBox.currentIndexChanged['QString'].connect(self.changeNamedStyle)
+            except (KeyError, TypeError):
+                # Fallback: use index changed and get text manually
+                self.styleComboBox.currentIndexChanged.connect(self._styleComboBoxIndexChanged)
+                
         self.comboBox.setCurrentIndex(-1)
         self.comboBox.setCurrentIndex(0)
         self.showLegend()
@@ -157,14 +143,14 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.tableWidget.setColumnCount(2)
             self.tableWidget.horizontalHeader().setStretchLastSection(True)
 
-            pm_icon_size = self.tableWidget.style().pixelMetric(QStyle.PM_ListViewIconSize)
+            pm_icon_size = self.tableWidget.style().pixelMetric(PM_ListViewIconSize)
             icon_size = QSize(self.tableWidget.columnWidth(0) - 10, pm_icon_size)
 
             i = 0
             for symbol in symbols:
                 item1 = QTableWidgetItem()
                 label = QLabel()
-                label.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+                label.setAlignment(AlignHCenter | AlignVCenter)
                 pixmap = QgsSymbolLayerUtils.symbolPreviewPixmap(symbol, icon_size)
                 label.setPixmap(pixmap)
                 self.tableWidget.setCellWidget(i,0,label)
@@ -311,3 +297,9 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             break
         
         nonNumericList.append([layer_id, layer_name])
+
+    def _styleComboBoxIndexChanged(self, index):
+        """Fallback method for Qt5/Qt6 compatibility when currentTextChanged is not available"""
+        if index >= 0:
+            styleName = self.styleComboBox.itemText(index)
+            self.changeNamedStyle(styleName)
