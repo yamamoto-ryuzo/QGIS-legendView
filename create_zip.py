@@ -39,10 +39,11 @@ def create_plugin_zip():
     # Files to include in the ZIP
     FILES_TO_INCLUDE = [
         "__init__.py",
-        "legend_view.py", 
+        "legend_view.py",
         "legend_view_dockwidget.py",
         "legend_view_dockwidget_base.ui",
         "resources_rc.py",
+        "resources_rc_qt5.py",  # Add Qt5 specific resource file
         "metadata.txt",
         "LICENSE",
         "README.md",

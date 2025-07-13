@@ -34,6 +34,9 @@ from .qt_compat import *
 from qgis.core import *
 from qgis.gui import *
 
+# Import resources explicitly
+from . import resources_rc
+
 from operator import itemgetter
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -53,6 +56,25 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # http://doc.qt.io/qt-5/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+        
+        # Set window icon for dock widget - try multiple approaches
+        try:
+            # Method 1: Direct resource path
+            icon_path = ':/plugins/legend_view/icon.png'
+            icon = QIcon(icon_path)
+            self.setWindowIcon(icon)
+            
+            # Method 2: Alternative approach with file path
+            if icon.isNull():
+                import os
+                file_path = os.path.join(os.path.dirname(__file__), 'icon.png')
+                if os.path.exists(file_path):
+                    icon = QIcon(file_path)
+                    self.setWindowIcon(icon)
+        except Exception as e:
+            # Fallback - continue without icon
+            pass
+        
         self.iface = iface
         self.currentLayer = None
         self.root = QgsProject.instance().layerTreeRoot()

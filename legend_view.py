@@ -23,13 +23,29 @@
 """
 import re
 
-# Import Qt compatibility module
-from .qt_compat import QSettings, QTranslator, QCoreApplication, Qt, QIcon, QAction, QDockWidget, WA_DeleteOnClose, RightDockWidgetArea, translate
+# Import Qt compatibility module first
+from .qt_compat import QSettings, QTranslator, QCoreApplication, Qt, QIcon, QAction, QDockWidget, WA_DeleteOnClose, RightDockWidgetArea, translate, is_qt5, is_qt6, QT_VERSION, QtWidgets, QSize
 
 from qgis.core import QgsSettings, QgsMessageLog, QgsProject, QgsExpressionContextUtils
 
 # Initialize Qt resources from file resources.py
-from .resources_rc import *
+if is_qt5():
+    # Qt5 specific resource file with forced registration
+    try:
+        from . import resources_rc_qt5
+        # Force resource registration for Qt5 multiple times if needed
+        resources_rc_qt5.qInitResources()
+        # Double-check registration
+        if hasattr(resources_rc_qt5, 'qInitResources'):
+            resources_rc_qt5.qInitResources()
+    except ImportError:
+        try:
+            from .resources_rc import *
+        except:
+            pass
+else:
+    # Qt6 and fallback
+    from .resources_rc import *
 
 # Import version information
 from .version import __version__, get_version_info, get_compatibility_info
@@ -77,7 +93,7 @@ class LegendView:
         # Declare instance attributes
         self.actions = []
         self.menu = self.tr(u'&凡例表示')  # Default to Japanese, will be translated
-        self.toolbar = None  # Initialize as None, will be created in initGui()
+        # No custom toolbar - using standard QGIS plugin toolbar
         
         #print "** INITIALIZING LegendView"
 
@@ -167,7 +183,30 @@ class LegendView:
         :rtype: QAction
         """
 
-        icon = QIcon(icon_path)
+        # Create icon - simple and reliable approach
+        icon = QIcon()
+        
+        # Try multiple approaches in order of reliability
+        import os
+        
+        # Method 1: File system path (most reliable)
+        if icon_path.startswith(':/'):
+            file_name = os.path.basename(icon_path)
+            file_path = os.path.join(os.path.dirname(__file__), file_name)
+        else:
+            file_path = icon_path
+            
+        if os.path.exists(file_path):
+            icon = QIcon(file_path)
+        
+        # Method 2: Resource path (if file system failed)
+        if icon.isNull() and icon_path.startswith(':/'):
+            icon = QIcon(icon_path)
+        
+        # Method 3: Create simple fallback icon if both failed
+        if icon.isNull():
+            icon = self.create_fallback_icon()
+        
         action = QAction(icon, text, parent)
         action.triggered.connect(callback)
         action.setEnabled(enabled_flag)
@@ -178,8 +217,9 @@ class LegendView:
         if whats_this is not None:
             action.setWhatsThis(whats_this)
 
-        if add_to_toolbar and self.toolbar is not None:
-            self.toolbar.addAction(action)
+        if add_to_toolbar:
+            # Add to the standard QGIS plugin toolbar
+            self.iface.addToolBarIcon(action)
 
         if add_to_menu:
             self.iface.addPluginToMenu(
@@ -194,20 +234,11 @@ class LegendView:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
         
-        # Create toolbar safely during GUI initialization
-        try:
-            if self.toolbar is None:
-                self.toolbar = self.iface.addToolBar(u'LegendView')
-                self.toolbar.setObjectName(u'LegendView')
-        except Exception as e:
-            QgsMessageLog.logMessage(f"Error creating toolbar: {str(e)}", "LegendView", level=1)
-            # Fallback: don't use toolbar if creation fails
-            self.toolbar = None
-
         icon_path = ':/plugins/legend_view/icon.png'
+        
         self.add_action(
             icon_path,
-            text=self.tr(u'凡例'),  # Default to Japanese, will be translated
+            text=self.tr(u'凡例'),
             callback=self.run,
             parent=self.iface.mainWindow())
 
@@ -242,13 +273,7 @@ class LegendView:
                 self.tr(u'&凡例表示'),  # Default to Japanese, will be translated
                 action)
             self.iface.removeToolBarIcon(action)
-        # remove the toolbar safely
-        if self.toolbar is not None:
-            try:
-                del self.toolbar
-            except:
-                pass
-            self.toolbar = None
+        # No custom toolbar to remove - using standard plugin toolbar
 
     #--------------------------------------------------------------------------
 
@@ -323,4 +348,42 @@ class LegendView:
             value = ecs.variable(name)
             if value == "1":
                 self.run()
+
+    def create_fallback_icon(self):
+        """Create a simple fallback icon when other methods fail"""
+        try:
+            # Import Qt modules based on version
+            if is_qt5():
+                from PyQt5.QtGui import QPixmap, QPainter, QColor, QPen
+                from PyQt5.QtCore import Qt
+            else:
+                from PyQt6.QtGui import QPixmap, QPainter, QColor, QPen
+                from PyQt6.QtCore import Qt
+            
+            # Create a simple 24x24 icon
+            pixmap = QPixmap(24, 24)
+            pixmap.fill(Qt.transparent)
+            
+            painter = QPainter(pixmap)
+            painter.setRenderHint(QPainter.Antialiasing)
+            
+            # Draw a simple legend-like icon
+            painter.setPen(QPen(QColor(50, 50, 150), 2))
+            painter.setBrush(QColor(200, 220, 255))
+            painter.drawRect(2, 2, 20, 20)
+            
+            # Add some lines to represent legend entries
+            painter.setPen(QPen(QColor(100, 100, 100), 1))
+            painter.drawLine(5, 8, 19, 8)
+            painter.drawLine(5, 12, 19, 12)
+            painter.drawLine(5, 16, 19, 16)
+            
+            painter.end()
+            
+            return QIcon(pixmap)
+        except:
+            # Return empty icon if even fallback fails
+            return QIcon()
+
+
 

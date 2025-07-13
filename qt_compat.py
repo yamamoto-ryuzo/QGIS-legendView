@@ -67,11 +67,11 @@ if QT_VERSION == 6:
             label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
         
         def createSymbolPreview(symbol, size):
-            """Qt6 specific symbol preview creation - 3x larger symbol"""
+            """Qt6 specific symbol preview creation - 95% of frame size"""
             try:
                 from qgis.core import QgsSymbolLayerUtils
-                # Make symbol 3x larger for better visibility
-                enhanced_size = QSize(int(size.width() * 3.0), int(size.height() * 3.0))
+                # Use 95% of the available frame size for optimal display
+                enhanced_size = QSize(int(size.width() * 0.95), int(size.height() * 0.95))
                 return QgsSymbolLayerUtils.symbolPreviewPixmap(symbol, enhanced_size)
             except:
                 from PyQt6.QtGui import QPixmap
@@ -104,11 +104,11 @@ if QT_VERSION == 6:
                 label.setAlignment(0x0004 | 0x0080)
         
         def createSymbolPreview(symbol, size):
-            """Qt6 fallback symbol preview creation - 3x larger symbol to match main function"""
+            """Qt6 fallback symbol preview creation - 95% of frame size"""
             try:
                 from qgis.core import QgsSymbolLayerUtils
-                # Qt6 fallback also gets 3x size enhancement to match main Qt6 function
-                enhanced_size = QSize(int(size.width() * 3.0), int(size.height() * 3.0))
+                # Use 95% of the available frame size for optimal display
+                enhanced_size = QSize(int(size.width() * 0.95), int(size.height() * 0.95))
                 return QgsSymbolLayerUtils.symbolPreviewPixmap(symbol, enhanced_size)
             except:
                 from PyQt6.QtGui import QPixmap
@@ -154,11 +154,11 @@ else:
                 pass
         
         def createSymbolPreview(symbol, size):
-            """Qt5 specific symbol preview creation - 3x larger symbol"""
+            """Qt5 specific symbol preview creation - 95% of frame size"""
             try:
                 from qgis.core import QgsSymbolLayerUtils
-                # Make symbol 3x larger for better visibility
-                enhanced_size = QSize(int(size.width() * 3.0), int(size.height() * 3.0))
+                # Use 95% of the available frame size for optimal display
+                enhanced_size = QSize(int(size.width() * 0.95), int(size.height() * 0.95))
                 return QgsSymbolLayerUtils.symbolPreviewPixmap(symbol, enhanced_size)
             except:
                 # Create empty pixmap if all fails
@@ -199,11 +199,11 @@ else:
                 pass
         
         def createSymbolPreview(symbol, size):
-            """Fallback symbol preview creation - 3x larger symbol"""
+            """Fallback symbol preview creation - 95% of frame size"""
             try:
                 from qgis.core import QgsSymbolLayerUtils
-                # Make fallback symbol 3x larger too
-                enhanced_size = QSize(int(size.width() * 3.0), int(size.height() * 3.0))
+                # Use 95% of the available frame size for optimal display
+                enhanced_size = QSize(int(size.width() * 0.95), int(size.height() * 0.95))
                 return QgsSymbolLayerUtils.symbolPreviewPixmap(symbol, enhanced_size)
             except:
                 try:
