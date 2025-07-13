@@ -33,6 +33,22 @@
       <item>
        <widget class="QComboBox" name="comboBox"/>
       </item>
+      <item>
+       <widget class="QPushButton" name="currentLayerButton">
+        <property name="maximumSize">
+         <size>
+          <width>50</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>現在</string>
+        </property>
+        <property name="toolTip">
+         <string>現在アクティブなレイヤを選択</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item>

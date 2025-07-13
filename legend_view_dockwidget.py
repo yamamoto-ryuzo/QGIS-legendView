@@ -76,6 +76,9 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.comboBox.currentIndexChanged.connect(self.currentIndexChanged)
         self.mOpacityWidget.opacityChanged.connect(self.opacityChanged)
         
+        # Connect current layer button
+        self.currentLayerButton.clicked.connect(self.selectCurrentLayer)
+        
         # Qt5/Qt6 compatible signal connection
         try:
             # Try Qt6 approach first
@@ -228,6 +231,8 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         slist = ecs.variableNames()
         layerIdList = []
         layerIdList2 = []
+        
+        # Process layers with legend_ variables
         for sstr in slist:
             if "legend_" not in sstr:
                 continue
@@ -237,6 +242,15 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 # Get variable value and handle None safely
                 variable_value = ecs.variable(sstr)
                 self.distributeOrderList(layer.id(), layer_name, variable_value, layerIdList, layerIdList2)
+
+        # Add current active layer if not already in the list
+        current_layer = self.iface.activeLayer()
+        if current_layer and isinstance(current_layer, (QgsVectorLayer, QgsRasterLayer)):
+            # Check if current layer is not already in the lists
+            existing_ids = [item[0] for item in layerIdList + layerIdList2]
+            if current_layer.id() not in existing_ids:
+                # Add current layer to the beginning of layerIdList2 with high priority
+                layerIdList2.insert(0, [current_layer.id(), f"current_{current_layer.name()}"])
 
         if len(layerIdList) > 0:
             layerIdList.sort(key=itemgetter(1))
@@ -260,7 +274,12 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             else :
                 continue
 
-            self.comboBox.addItem(icon,layer.name(),layerid[0])
+            # Display name with current layer indicator
+            display_name = layer.name()
+            if isinstance(layerid[1], str) and layerid[1].startswith("current_"):
+                display_name = f"★ {layer.name()} (現在)"
+                
+            self.comboBox.addItem(icon, display_name, layerid[0])
             # 対象レイヤの凡例変更シグナルを検知して処理する
             layer.legendChanged.connect(self.legendChanged)
 
@@ -329,3 +348,21 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         if index >= 0:
             styleName = self.styleComboBox.itemText(index)
             self.changeNamedStyle(styleName)
+
+    def selectCurrentLayer(self):
+        """現在アクティブなレイヤを選択する"""
+        current_layer = self.iface.activeLayer()
+        if current_layer:
+            # コンボボックスから該当するレイヤを検索
+            for i in range(self.comboBox.count()):
+                if self.comboBox.itemData(i) == current_layer.id():
+                    self.comboBox.setCurrentIndex(i)
+                    return
+            
+            # コンボボックスにない場合は、リストを更新して再度検索
+            self.comboBox.clear()
+            self.comboDataSet()
+            for i in range(self.comboBox.count()):
+                if self.comboBox.itemData(i) == current_layer.id():
+                    self.comboBox.setCurrentIndex(i)
+                    return
