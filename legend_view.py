@@ -71,14 +71,14 @@ class LegendView:
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
 
-        # initialize locale
-        locale = QSettings().value('locale/userLocale')[0:2]
+        # initialize locale (default: English)
+        locale = QSettings().value('locale/userLocale', 'en')[0:2]
         locale_path = os.path.join(
             self.plugin_dir,
             'i18n',
             'LegendView_{}.qm'.format(locale))
 
-        # Try to load Qt translator
+        # Try to load Qt translator (QGIS標準)
         self.translator = None
         if os.path.exists(locale_path):
             self.translator = QTranslator()
@@ -86,13 +86,10 @@ class LegendView:
                 QCoreApplication.installTranslator(self.translator)
             else:
                 self.translator = None
-        
-        # Store current locale for Python fallback translations
-        self.current_locale = locale if locale in ['ja', 'en'] else 'en'
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&凡例表示')  # Default to Japanese, will be translated
+        self.menu = self.tr(u'&Legend View')  # Default to English, will be translated
         # No custom toolbar - using standard QGIS plugin toolbar
         
         #print "** INITIALIZING LegendView"
@@ -109,28 +106,8 @@ class LegendView:
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
-        """Get the translation for a string using Qt translation API.
-
-        We implement this ourselves since we do not inherit QObject.
-
-        :param message: String for translation.
-        :type message: str, QString
-
-        :returns: Translated version of message.
-        :rtype: QString
-        """
-        # Try Qt translation first
-        translated = translate('LegendView', message)
-        
-        # If no translation found or same as original, try Python fallback
-        if translated == message and hasattr(self, 'current_locale'):
-            try:
-                from .i18n.translations import translate as py_translate
-                translated = py_translate('LegendView', message, self.current_locale)
-            except ImportError:
-                pass
-        
-        return translated
+        """QGIS/Qt標準の翻訳APIのみ"""
+        return QCoreApplication.translate('LegendView', message)
 
 
     def add_action(
@@ -238,7 +215,7 @@ class LegendView:
         
         self.add_action(
             icon_path,
-            text=self.tr(u'凡例'),
+            text=self.tr(u'Legend'),
             callback=self.run,
             parent=self.iface.mainWindow())
 
@@ -270,7 +247,7 @@ class LegendView:
 
         for action in self.actions:
             self.iface.removePluginMenu(
-                self.tr(u'&凡例表示'),  # Default to Japanese, will be translated
+                self.tr(u'&Legend View'),  # Default to English, will be translated
                 action)
             self.iface.removeToolBarIcon(action)
         # No custom toolbar to remove - using standard plugin toolbar

@@ -5,6 +5,28 @@ All notable changes to the QGIS Legend View plugin will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [2.0.2] - 2025-07-20
+
+### Changed
+- Currentボタンの幅を1.5倍に拡大
+- legend_view_dockwidget_base.uiのUI調整
+- 各言語翻訳ファイルの構造修正・再生成（.ts/.qm）
+- ドイツ語・イタリア語翻訳ファイルの再構築
+- lreleaseによる全言語の.qm再生成
+- 最新の翻訳・UI修正を反映したZIPパッケージ作成
+
+### Fixed
+- 多言語翻訳抽出・反映の不具合修正
+- .tsファイルの重複・壊れたXML宣言の整理
+- Currentボタンの翻訳が抽出されない問題の修正
+
+### Added
+- CHANGELOG.mdのバージョン管理手順明記
+- バージョン管理スクリプトの利用例をREADME等に追記
+
+---
+
 ## [Unreleased]
 
 ## [2.0.1] - 2025-07-13

@@ -1,38 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="ja_JP">
+<TS version="2.1" language="fr_FR">
 <context>
     <name>LegendView</name>
     <message>
         <source>&amp;Legend View</source>
-        <translation type="vanished">&amp;凡例表示</translation>
+        <translation type="vanished">Vue de la légende</translation>
     </message>
     <message>
         <source>Legend</source>
-        <translation type="vanished">凡例</translation>
+        <translation type="vanished">Légende</translation>
     </message>
     <message>
         <source>Symbol</source>
-        <translation type="vanished">シンボル</translation>
+        <translation type="vanished">Symbole</translation>
     </message>
     <message>
         <source>Other values</source>
-        <translation type="vanished">その他の値</translation>
+        <translation type="vanished">Autres valeurs</translation>
     </message>
 </context>
 <context>
     <name>LegendViewDockWidget</name>
     <message>
         <source>Symbol</source>
-        <translation type="vanished">シンボル</translation>
+        <translation type="vanished">Symbole</translation>
     </message>
     <message>
         <source>Legend</source>
-        <translation type="vanished">凡例</translation>
+        <translation type="vanished">Légende</translation>
     </message>
     <message>
         <source>Other values</source>
-        <translation type="vanished">その他の値</translation>
+        <translation type="vanished">Autres valeurs</translation>
     </message>
 </context>
 <context>
@@ -40,17 +40,17 @@
     <message>
         <location filename="../legend_view_dockwidget_base.ui" line="14"/>
         <source>Legend View</source>
-        <translation>凡例表示</translation>
+        <translation>Vue de la légende</translation>
     </message>
     <message>
         <location filename="../legend_view_dockwidget_base.ui" line="29"/>
         <source>Layer Name</source>
-        <translation>レイヤ名</translation>
+        <translation>Nom de la couche</translation>
     </message>
     <message>
         <location filename="../legend_view_dockwidget_base.ui" line="45"/>
         <source>Current</source>
-        <translation>現在のレイヤ</translation>
+        <translation>Actuel</translation>
     </message>
     <message>
         <location filename="../legend_view_dockwidget_base.ui" line="48"/>
@@ -60,12 +60,12 @@
     <message>
         <location filename="../legend_view_dockwidget_base.ui" line="65"/>
         <source>Opacity</source>
-        <translation>不透明度</translation>
+        <translation>Opacité</translation>
     </message>
     <message>
         <location filename="../legend_view_dockwidget_base.ui" line="91"/>
         <source>Style</source>
-        <translation>スタイル</translation>
+        <translation>Style</translation>
     </message>
     <message>
         <location filename="../legend_view_dockwidget_base.ui" line="119"/>

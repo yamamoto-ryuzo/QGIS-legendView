@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>凡例表示</string>
+   <string>Legend View</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -26,7 +26,7 @@
          </size>
         </property>
         <property name="text">
-         <string>レイヤ名</string>
+         <string>Layer Name</string>
         </property>
        </widget>
       </item>
@@ -37,15 +37,15 @@
        <widget class="QPushButton" name="currentLayerButton">
         <property name="maximumSize">
          <size>
-          <width>50</width>
+         <width>75</width>
           <height>16777215</height>
          </size>
         </property>
         <property name="text">
-         <string>現在</string>
+         <string>Current</string>
         </property>
         <property name="toolTip">
-         <string>現在アクティブなレイヤを選択</string>
+         <string>Select the currently active layer</string>
         </property>
        </widget>
       </item>
@@ -62,7 +62,7 @@
          </size>
         </property>
         <property name="text">
-         <string>不透明度</string>
+         <string>Opacity</string>
         </property>
        </widget>
       </item>
@@ -88,7 +88,7 @@
          </size>
         </property>
         <property name="text">
-         <string>スタイル</string>
+         <string>Style</string>
         </property>
        </widget>
       </item>
@@ -116,12 +116,12 @@
       </attribute>
       <column>
        <property name="text">
-        <string>新しい列</string>
+        <string>New Column</string>
        </property>
       </column>
       <column>
        <property name="text">
-        <string>新しい列</string>
+        <string>New Column</string>
        </property>
       </column>
      </widget>

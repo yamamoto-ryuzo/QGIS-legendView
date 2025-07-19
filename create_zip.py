@@ -34,7 +34,7 @@ def create_plugin_zip():
     # Read plugin name from metadata.txt
     plugin_folder_name = get_plugin_name_from_metadata()
     REPO_NAME = "QGIS_legendView"  # Repository name with - replaced by _
-    ZIP_NAME = f"{REPO_NAME}_v{PLUGIN_VERSION}.zip"
+    ZIP_NAME = "QGIS_legendView_v2.0.2.zip"
     
     # Files to include in the ZIP
     FILES_TO_INCLUDE = [
