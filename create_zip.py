@@ -18,72 +18,95 @@ try:
 except ImportError:
     PLUGIN_VERSION = "2.0.1"
 
-def get_plugin_name_from_metadata():
-    """Read plugin name from metadata.txt"""
+
+def get_plugin_name_and_version_from_metadata():
+    """Read plugin name and version from metadata.txt"""
     try:
         config = configparser.ConfigParser()
         config.read('metadata.txt', encoding='utf-8')
-        return config.get('general', 'name')
+        name = config.get('general', 'name')
+        version = config.get('general', 'version')
+        return name, version
     except Exception as e:
-        print(f"Warning: Could not read plugin name from metadata.txt: {e}")
-        return "QGIS-legendView"  # fallback name
+        print(f"Warning: Could not read plugin name/version from metadata.txt: {e}")
+        return "QGIS-legendView", "0.0.1"  # fallback
+
+def bump_version(version_str):
+    """Bump patch version (A.B.C → A.B.(C+1))"""
+    parts = version_str.strip().split('.')
+    if len(parts) != 3:
+        return version_str  # fallback
+    try:
+        a, b, c = map(int, parts)
+        c += 1
+        return f"{a}.{b}.{c}"
+    except Exception:
+        return version_str
+
+def update_metadata_version_and_changelog(new_version):
+    """Update version and prepend new changelog entry to metadata.txt"""
+    with open('metadata.txt', 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+    new_lines = []
+    changelog_idx = None
+    for i, line in enumerate(lines):
+        if line.strip().startswith('version='):
+            new_lines.append(f'version={new_version}\n')
+        else:
+            new_lines.append(line)
+        if line.strip().startswith('changelog='):
+            changelog_idx = i
+    # changelog=の次の行から新バージョン履歴を挿入
+    if changelog_idx is not None:
+        insert_idx = changelog_idx + 1
+        # 新バージョンのテンプレート履歴を挿入
+        new_lines.insert(insert_idx, f'    Version {new_version}:\n    - (ここに変更内容を記載)\n')
+    with open('metadata.txt', 'w', encoding='utf-8') as f:
+        f.writelines(new_lines)
+
+
 
 def create_plugin_zip():
-    """Create ZIP package for QGIS plugin distribution"""
-    
-    # Read plugin name from metadata.txt
-    plugin_folder_name = get_plugin_name_from_metadata()
-    REPO_NAME = "QGIS_legendView"  # Repository name with - replaced by _
-    ZIP_NAME = "QGIS_legendView_v2.0.2.zip"
-    
-    # Files to include in the ZIP
-    FILES_TO_INCLUDE = [
+    """Create ZIP package for QGIS plugin distribution (auto version up)"""
+    # 1. get plugin name and version
+    plugin_folder_name, old_version = get_plugin_name_and_version_from_metadata()
+    new_version = bump_version(old_version)
+    # 2. update metadata.txt (version, changelog)
+    update_metadata_version_and_changelog(new_version)
+    # 3. ZIP名
+    zip_name = f"{plugin_folder_name}_v{new_version}.zip"
+    # 4. 必要最小限ファイル
+    files_to_include = [
         "__init__.py",
         "legend_view.py",
         "legend_view_dockwidget.py",
         "legend_view_dockwidget_base.ui",
         "resources_rc.py",
-        "resources_rc_qt5.py",  # Add Qt5 specific resource file
+        "resources_rc_qt5.py",
         "metadata.txt",
         "LICENSE",
         "README.md",
         "icon.png",
         "legend.png",
         "qt_compat.py",
-        "version.py",
-        "CHANGELOG.md",
-        "create_translations.py",
-        "version_manager.py",
-        "validate_package.py"
+        "version.py"
     ]
-    
-    # Directories to include
-    DIRS_TO_INCLUDE = [
-        "i18n"
-    ]
-    
-    print(f"Creating plugin ZIP package: {ZIP_NAME}")
-    
-    # Remove existing ZIP file if it exists
-    if os.path.exists(ZIP_NAME):
-        os.remove(ZIP_NAME)
-        print("Removed existing ZIP file")
-    
-    # Create ZIP file
-    with zipfile.ZipFile(ZIP_NAME, 'w', zipfile.ZIP_DEFLATED) as zipf:
+    dirs_to_include = ["i18n"]
+    # 5. 旧バージョンZIP自動削除
+    for f in os.listdir('.'):
+        if f.startswith(plugin_folder_name + '_v') and f.endswith('.zip'):
+            os.remove(f)
+    print(f"Creating plugin ZIP package: {zip_name}")
+    with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
         print("Adding files to ZIP archive...")
-        
-        # Add individual files
-        for file_name in FILES_TO_INCLUDE:
+        for file_name in files_to_include:
             if os.path.exists(file_name):
                 arcname = f"{plugin_folder_name}/{file_name}"
                 zipf.write(file_name, arcname)
                 print(f"✓ Added: {file_name}")
             else:
                 print(f"✗ Not found: {file_name}")
-        
-        # Add directories
-        for dir_name in DIRS_TO_INCLUDE:
+        for dir_name in dirs_to_include:
             if os.path.exists(dir_name) and os.path.isdir(dir_name):
                 for root, dirs, files in os.walk(dir_name):
                     for file in files:
@@ -93,15 +116,12 @@ def create_plugin_zip():
                         print(f"✓ Added: {file_path}")
             else:
                 print(f"✗ Directory not found: {dir_name}")
-    
-    # Get file size and show results
-    if os.path.exists(ZIP_NAME):
-        file_size = os.path.getsize(ZIP_NAME)
+    if os.path.exists(zip_name):
+        file_size = os.path.getsize(zip_name)
         file_size_kb = round(file_size / 1024, 2)
-        
-        print(f"\n✓ Successfully created: {ZIP_NAME}")
+        print(f"\n✓ Successfully created: {zip_name}")
         print(f"   File size: {file_size_kb} KB")
-        print(f"   Full path: {os.path.abspath(ZIP_NAME)}")
+        print(f"   Full path: {os.path.abspath(zip_name)}")
         print("\nPlugin ZIP package created successfully!")
         print("Ready for distribution or upload to QGIS Plugin Repository")
         return True

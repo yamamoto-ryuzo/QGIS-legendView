@@ -184,7 +184,11 @@ class LegendView:
         if icon.isNull():
             icon = self.create_fallback_icon()
         
-        action = QAction(icon, text, parent)
+        # Qt6ではparent=NoneでQAction生成（ツールバー表示対策）
+        if is_qt6():
+            action = QAction(icon, text)
+        else:
+            action = QAction(icon, text, parent)
         action.triggered.connect(callback)
         action.setEnabled(enabled_flag)
 
