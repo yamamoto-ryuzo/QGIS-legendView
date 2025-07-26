@@ -73,7 +73,7 @@ def create_plugin_zip():
     new_version = bump_version(old_version)
     # 2. update metadata.txt (version, changelog)
     update_metadata_version_and_changelog(new_version)
-    # 3. ZIP名
+    # 3. ZIP名（QGIS-legendView-main_vX.Y.Z.zip 形式に自動対応）
     zip_name = f"{plugin_folder_name}_v{new_version}.zip"
     # 4. 必要最小限ファイル
     files_to_include = [

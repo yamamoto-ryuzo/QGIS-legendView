@@ -3,11 +3,11 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=QGIS-legendView
+name=QGIS-legendView-main
 qgisMinimumVersion=3.0
 qgisMaximumVersion=3.99
 description=Display only the necessary legends in a clear, easy-to-understand manner with Qt5/Qt6 compatibility
-version=2.0.3
+version=2.0.4
 author=yamamoto ryuzo
 email=ryu@yamakun.net
 supportsQt6=True
@@ -24,6 +24,8 @@ hasProcessingProvider=no
 
 # Changelog for version 2.0.2
 changelog=
+    Version 2.0.4:
+    - (ここに変更内容を記載)
     Version 2.0.3:
     - (ここに変更内容を記載)
     Version 2.0.2:
