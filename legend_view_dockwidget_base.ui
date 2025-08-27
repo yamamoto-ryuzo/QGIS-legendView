@@ -49,6 +49,22 @@
         </property>
        </widget>
       </item>
+    <item>
+     <widget class="QPushButton" name="registerButton">
+      <property name="maximumSize">
+       <size>
+       <width>75</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Register</string>
+      </property>
+      <property name="toolTip">
+       <string>Register the current layer as a project variable (legend_...)</string>
+      </property>
+     </widget>
+    </item>
      </layout>
     </item>
     <item>
@@ -66,6 +82,60 @@
         </property>
        </widget>
       </item>
+  <item>
+   <widget class="QLabel" name="priorityLabel">
+    <property name="maximumSize">
+     <size>
+      <width>36</width>
+      <height>22</height>
+     </size>
+    </property>
+    <property name="text">
+     <string>Prio</string>
+    </property>
+    <property name="toolTip">
+     <string>Priority for the legend variable (numeric)</string>
+    </property>
+   </widget>
+  </item>
+  <item>
+   <widget class="QSpinBox" name="prioritySpinBox">
+    <property name="maximumSize">
+     <size>
+      <width>60</width>
+      <height>22</height>
+     </size>
+    </property>
+    <property name="minimum">
+     <number>0</number>
+    </property>
+    <property name="maximum">
+     <number>100</number>
+    </property>
+    <property name="value">
+     <number>0</number>
+    </property>
+    <property name="toolTip">
+     <string>Set numeric priority for the legend variable</string>
+    </property>
+   </widget>
+  </item>
+  <item>
+   <widget class="QPushButton" name="varsButton">
+    <property name="maximumSize">
+     <size>
+     <width>75</width>
+      <height>16777215</height>
+     </size>
+    </property>
+    <property name="text">
+     <string>Vars</string>
+    </property>
+    <property name="toolTip">
+     <string>Show existing legend_ project variables</string>
+    </property>
+   </widget>
+  </item>
       <item>
        <widget class="QgsOpacityWidget" name="mOpacityWidget"/>
       </item>

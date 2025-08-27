@@ -33,6 +33,9 @@ from io import BytesIO
 # Import Qt compatibility module
 from .qt_compat import *
 
+# Use QGIS-provided PyQt bindings to remain version independent
+from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QPushButton, QInputDialog, QMessageBox, QHBoxLayout
+
 from qgis.core import *
 from qgis.gui import *
 
@@ -102,6 +105,16 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         
         # Connect current layer button
         self.currentLayerButton.clicked.connect(self.selectCurrentLayer)
+        # Connect register button to save current layer as project variable
+        try:
+            self.registerButton.clicked.connect(self.registerCurrentLayer)
+        except Exception:
+            # If UI doesn't have the button for any reason, ignore
+            pass
+        try:
+            self.varsButton.clicked.connect(self.showLegendVariables)
+        except Exception:
+            pass
         
         # Qt5/Qt6 compatible signal connection
         try:
@@ -360,3 +373,162 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 if self.comboBox.itemData(i) == current_layer.id():
                     self.comboBox.setCurrentIndex(i)
                     return
+
+    def registerCurrentLayer(self):
+        """Register the currently active layer as a project variable named legend_<group>_<layer>
+
+        The variable name is derived from the layer tree path (groups + layer name) joined by '_'.
+        The value is left empty (or could be a numeric priority if desired).
+        """
+        current_layer = self.iface.activeLayer()
+        if not current_layer:
+            return
+
+        # Build layer path: traverse layer tree to get group path
+        def find_path(node, target_layer_id, path_parts):
+            for child in node.children():
+                if isinstance(child, QgsLayerTreeLayer):
+                    if child.layer().id() == target_layer_id:
+                        return path_parts + [child.name()]
+                elif isinstance(child, QgsLayerTreeGroup):
+                    res = find_path(child, target_layer_id, path_parts + [child.name()])
+                    if res:
+                        return res
+            return None
+
+        root = QgsProject.instance().layerTreeRoot()
+        path = find_path(root, current_layer.id(), [])
+        if not path:
+            # fallback to layer name only
+            path = [current_layer.name()]
+
+        var_name = 'legend_' + '_'.join(path)
+
+        # Get priority value from spin box if available
+        try:
+            priority = str(self.prioritySpinBox.value())
+        except Exception:
+            priority = ''
+
+        # Try to set project variable via QgsExpressionContextUtils if available
+        try:
+            QgsExpressionContextUtils.setProjectVariable(QgsProject.instance(), var_name, priority)
+        except Exception:
+            # Fallback: use project writeEntry to store under 'LegendView' group
+            try:
+                QgsProject.instance().writeEntry('LegendView', var_name, priority)
+            except Exception:
+                # give up silently
+                return
+
+        # Refresh combo box dataset and select the new variable's layer
+        self.comboBox.clear()
+        self.comboDataSet()
+        for i in range(self.comboBox.count()):
+            if self.comboBox.itemData(i) == current_layer.id():
+                self.comboBox.setCurrentIndex(i)
+                break
+
+    def showLegendVariables(self):
+        """Show a dialog listing project variables that start with 'legend_'."""
+        ecs = QgsExpressionContextUtils.projectScope(QgsProject.instance())
+        vars_list = [v for v in ecs.variableNames() if v.startswith('legend_')]
+
+        dlg = QDialog(self)
+        dlg.setWindowTitle(self.tr('Legend variables'))
+        layout = QVBoxLayout(dlg)
+
+        table = QTableWidget(dlg)
+        table.setColumnCount(2)
+        table.setHorizontalHeaderLabels([self.tr('Variable'), self.tr('Value')])
+        table.setRowCount(len(vars_list))
+        # allow row selection for edit/delete
+        try:
+            table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+            table.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        except Exception:
+            pass
+
+        for i, name in enumerate(sorted(vars_list)):
+            value = ecs.variable(name)
+            item_name = QTableWidgetItem(name)
+            item_value = QTableWidgetItem('' if value is None else str(value))
+            item_name.setFlags(item_name.flags() & ~Qt.ItemIsEditable)
+            item_value.setFlags(item_value.flags() & ~Qt.ItemIsEditable)
+            table.setItem(i, 0, item_name)
+            table.setItem(i, 1, item_value)
+
+        table.horizontalHeader().setStretchLastSection(True)
+        layout.addWidget(table)
+        # Buttons: Edit, Delete, Close
+        btn_layout = QHBoxLayout()
+        edit_btn = QPushButton(self.tr('Edit'), dlg)
+        del_btn = QPushButton(self.tr('Delete'), dlg)
+        close_btn = QPushButton(self.tr('Close'), dlg)
+        edit_btn.clicked.connect(lambda: self.editLegendVariable(table))
+        del_btn.clicked.connect(lambda: self.deleteLegendVariable(table))
+        close_btn.clicked.connect(dlg.accept)
+        btn_layout.addWidget(edit_btn)
+        btn_layout.addWidget(del_btn)
+        btn_layout.addWidget(close_btn)
+        layout.addLayout(btn_layout)
+
+        dlg.exec_()
+
+    def editLegendVariable(self, table: QTableWidget):
+        sel = table.selectionModel().selectedRows()
+        if not sel:
+            return
+        row = sel[0].row()
+        name_item = table.item(row, 0)
+        val_item = table.item(row, 1)
+        if name_item is None:
+            return
+        name = name_item.text()
+        old = '' if val_item is None else val_item.text()
+
+        text, ok = QInputDialog.getText(self, self.tr('Edit variable'), self.tr('Value for %s') % name, text=old)
+        if not ok:
+            return
+
+        new_value = text
+        try:
+            QgsExpressionContextUtils.setProjectVariable(QgsProject.instance(), name, new_value)
+        except Exception:
+            try:
+                QgsProject.instance().writeEntry('LegendView', name, new_value)
+            except Exception:
+                QMessageBox.warning(self, self.tr('Error'), self.tr('Could not update variable'))
+                return
+
+        # update table
+        table.setItem(row, 1, QTableWidgetItem(new_value))
+
+    def deleteLegendVariable(self, table: QTableWidget):
+        sel = table.selectionModel().selectedRows()
+        if not sel:
+            return
+        row = sel[0].row()
+        name_item = table.item(row, 0)
+        if name_item is None:
+            return
+        name = name_item.text()
+
+        resp = QMessageBox.question(self, self.tr('Confirm delete'), self.tr('Delete variable %s?') % name, QMessageBox.Yes | QMessageBox.No)
+        if resp != QMessageBox.Yes:
+            return
+
+        # attempt removal
+        try:
+            # try API if available
+            QgsExpressionContextUtils.removeProjectVariable(QgsProject.instance(), name)
+        except Exception:
+            try:
+                # fallback: write empty string or None
+                QgsProject.instance().writeEntry('LegendView', name, None)
+            except Exception:
+                QMessageBox.warning(self, self.tr('Error'), self.tr('Could not remove variable'))
+                return
+
+        # remove row from table
+        table.removeRow(row)

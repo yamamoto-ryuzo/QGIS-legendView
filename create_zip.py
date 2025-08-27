@@ -124,10 +124,11 @@ def create_plugin_zip():
         print(f"   Full path: {os.path.abspath(zip_name)}")
         print("\nPlugin ZIP package created successfully!")
         print("Ready for distribution or upload to QGIS Plugin Repository")
-        return True
+        # Return the actual created zip filename for downstream use
+        return zip_name
     else:
         print("✗ Error: ZIP file was not created")
-        return False
+        return None
 
 def list_zip_contents(zip_name):
     """List contents of the created ZIP file for verification"""
@@ -146,11 +147,9 @@ def list_zip_contents(zip_name):
     print("-" * 50)
 
 if __name__ == "__main__":
-    success = create_plugin_zip()
-    
-    if success:
-        # Show ZIP contents for verification
-        zip_name = f"QGIS_legendView_v{PLUGIN_VERSION}.zip"
+    zip_name = create_plugin_zip()
+    if zip_name:
+        # Show ZIP contents for verification using the actual created filename
         list_zip_contents(zip_name)
     else:
         exit(1)
