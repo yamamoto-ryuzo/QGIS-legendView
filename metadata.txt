@@ -25,31 +25,8 @@ hasProcessingProvider=no
 # Changelog for version 2.0.2
 changelog=
     Version 2.0.15:
-    - (ここに変更内容を記載)
-    Version 2.0.14:
-    - (ここに変更内容を記載)
-    Version 2.0.13:
-    - (ここに変更内容を記載)
-    Version 2.0.12:
-    - (ここに変更内容を記載)
-    Version 2.0.11:
-    - (ここに変更内容を記載)
-    Version 2.0.10:
-    - (ここに変更内容を記載)
-    Version 2.0.9:
-    - (ここに変更内容を記載)
-    Version 2.0.8:
-    - (ここに変更内容を記載)
-    Version 2.0.7:
-    - (ここに変更内容を記載)
-    Version 2.0.6:
-    - (ここに変更内容を記載)
-    Version 2.0.5:
-    - (ここに変更内容を記載)
-    Version 2.0.4:
-    - (ここに変更内容を記載)
-    Version 2.0.3:
-    - (ここに変更内容を記載)
+    - レイヤ名に_がある場合も対応
+    - プロジェクト変数へレイヤ名を登録するボタンを追加
     Version 2.0.2:
     - Currentボタンの幅を1.5倍に拡大
     - legend_view_dockwidget_base.uiのUI調整
