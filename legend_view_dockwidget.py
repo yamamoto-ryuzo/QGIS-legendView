@@ -233,6 +233,28 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         return None
 
+    def findLayerByVariableName(self, layer_name_str):
+        """Resolve a legend_ variable value to a QgsMapLayer.
+
+        The project variable stores the layer path as groups + layer name joined by '_' which
+        is ambiguous if any group or layer name contains underscores. Try all possible
+        split positions where the last element is treated as the layer name (may contain
+        underscores) and return the first matching layer.
+        """
+        if not layer_name_str:
+            return None
+
+        tokens = layer_name_str.split('_')
+
+        # Try every possible split: tokens[:i] are groups, '_'.join(tokens[i:]) is layer name
+        for i in range(0, len(tokens)):
+            candidate = tokens[:i] + ['_'.join(tokens[i:])]
+            layer = self.getLayer(candidate)
+            if isinstance(layer, QgsMapLayer):
+                return layer
+
+        return None
+
     def comboDataSet(self) :
         ecs = QgsExpressionContextUtils.projectScope(QgsProject.instance())
         slist = ecs.variableNames()
@@ -244,7 +266,8 @@ class LegendViewDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             if "legend_" not in sstr:
                 continue
             layer_name = sstr.replace("legend_","")
-            layer = self.getLayer(layer_name.split("_"))
+            # Try to resolve the layer even if group or layer names contain underscores
+            layer = self.findLayerByVariableName(layer_name)
             if isinstance(layer, QgsMapLayer) :
                 # Get variable value and handle None safely
                 variable_value = ecs.variable(sstr)
