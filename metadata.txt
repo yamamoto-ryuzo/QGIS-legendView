@@ -8,7 +8,7 @@ qgisMinimumVersion=3.40
 qgisMaximumVersion=4.99
 description=Display only the necessary legends in a clear, easy-to-understand manner with Qt5/Qt6 compatibility
 version=2.0.16
-author=yamamoto ryuzo
+author=yamamoto_ryuzo
 email=ryu@yamakun.net
 supportsQt6=True
 
